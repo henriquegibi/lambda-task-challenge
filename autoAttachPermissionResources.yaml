@@ -1,0 +1,55 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - sts:AssumeRole
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+      Policies:
+        - PolicyName: IAMReadWrite
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - iam:CreatePolicy
+              - iam:AttachRolePolicy
+              - iam:PutRolePolicy
+              - iam:CreateRole
+              - iam:AttachUserPolicy
+              - iam:PutUserPolicy
+              Resource: '*'
+  LambdaEvent:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Rule for triggering the Lambda function when an IAM User is created
+      EventPattern:
+        source:
+        - aws.iam
+        detail-type:
+        - AWS API Call via CloudTrail
+        detail:
+          eventName: CreateUser
+          requestParameters:
+            userName:
+              Ref: IAMUser
+      State: ENABLED
+      Targets:
+        - Id: TriggerLambda
+          Arn: !Ref insertTheLambdaFunctionArnHere
+          Input: '{"UserName":" !Ref IAMUser + "}'
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref insertTheLambdaFunctionArnHere
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt LambdaEvent.Arn

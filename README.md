@@ -1,13 +1,15 @@
-# Lambda Task Challenge
+# Auto assign 'ViewOnlyPermission' to an IAM User when it is created on AWS
 
-### When an IAM user is created, assign read only policy to this user
-Use CloudWatch, or CloudTrail, or EventBridge.
+If you want create an IAM User and want to automatically assign to it a permission that allow the User only to read the cloud (ViewOnlyAccess) than this repository is right for you.
 
-- Create a Lambda Function in **Python**
-- Lambda must be triggered when a new IAM User is created
-- Lambda must be able to assign a policy to this new user
-- The policy designated: `arn:aws:iam::aws:policy/job-function/ViewOnlyAccess`
+### You will need to:
 
-##### Bonus
-1. Create a Lambda in **Java 11+**
-2. Send a SNS notification using the e-mail service.
+Create a Lambda function: Create a Lambda function in Java that has the necessary permissions to attach the "ViewOnlyAccess" policy to a new IAM user. The function code can be found at ***lambda.java*** file. Write down the ARN after creating the lambda.
+
+Use the YAML file (***autoAttachPermissionResources.yaml***) to:
+
+- create a CloudTrail trail to log all IAM user creation events in your AWS account.
+- create a CloudWatch Log Group and configure the CloudTrail trail to send logs to this group.
+- create a CloudWatch Event Rule: Next, create a CloudWatch Event Rule to trigger a Lambda function whenever an IAM user creation event is detected in the CloudWatch logs.
+
+Modify, at line 48 and 54 in the YAML file the *insertTheLambdaFunctionArnHere* to the Lambda ARN you wrote down earlier.
